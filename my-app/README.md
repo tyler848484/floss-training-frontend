@@ -1,12 +1,46 @@
-# React + Vite
+# Floss Training Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Overview
 
-Currently, two official plugins are available:
+This is a React + Vite web application for managing and booking training sessions for parents and their children. The app features:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Secure authentication using JWT cookies
+- Profile setup and management for parents and children
+- Session booking with location and pricing options
+- Responsive, modern UI built with React Bootstrap
 
-## Expanding the ESLint configuration
+## Running Locally
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/tyler848484/floss-training-frontend.git
+   cd floss-training-frontend/my-app
+   ```
+
+2. **Install dependencies:**
+
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server:**
+
+   ```bash
+   npm run dev
+   ```
+
+4. **Access the app:**
+   Open your browser and go to [http://localhost:5173](http://localhost:5173)
+
+> **Note:** The app expects a backend running at `http://localhost:8000` for authentication and API requests.
+
+## UI Screenshot
+
+_Add your screenshot below:_
+
+![App Screenshot](screenshot.png)
+
+---
+
+For any issues or questions, please contact the repository owner.
