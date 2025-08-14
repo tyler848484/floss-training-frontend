@@ -1,5 +1,7 @@
 # Floss Training Frontend
 
+![App Screenshot](screenshot.png)
+
 ## Overview
 
 This is a React + Vite web application for managing and booking training sessions for parents and their children. The app features:
@@ -34,12 +36,6 @@ This is a React + Vite web application for managing and booking training session
    Open your browser and go to [http://localhost:5173](http://localhost:5173)
 
 > **Note:** The app expects a backend running at `http://localhost:8000` for authentication and API requests.
-
-## UI Screenshot
-
-_Add your screenshot below:_
-
-![App Screenshot](screenshot.png)
 
 ---
 
