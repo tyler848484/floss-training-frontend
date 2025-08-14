@@ -1,6 +1,6 @@
 # Floss Training Frontend
 
-![App Screenshot](screenshot.png)
+![App Screenshot](my-app/screenshot.png)
 
 ## Overview
 
