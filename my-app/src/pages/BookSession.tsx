@@ -7,6 +7,8 @@ import {
   Row,
   Col,
   Container,
+  Toast,
+  ToastContainer,
 } from "react-bootstrap";
 import "../App.css";
 import FinishBookingModal from "../components/FinishBookingModal";
@@ -29,7 +31,6 @@ const getToday = () => {
   return today.toISOString().split("T")[0];
 };
 
-// Helper to format time string to 12-hour format with am/pm, remove leading zero from hour
 function formatTime12HourNoLeadingZero(timeStr: string, dateStr: string) {
   let [h, m, s] = timeStr.split(":");
   if (!s) s = "00";
@@ -52,9 +53,12 @@ const BookSession: React.FC = () => {
   const [sessionData, setSessionData] = useState<Session[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
+  const [showToast, setShowToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
+  const [toastVariant, setToastVariant] = useState<"success" | "danger">(
+    "success"
+  );
 
-  // Mock data for locations and children
-  // Mock data for locations and children
   const mockLocations = [
     { name: "Centennial Field", price: 0, id: 1 },
     { name: "Schusler", price: 5, id: 2 },
@@ -78,6 +82,17 @@ const BookSession: React.FC = () => {
     setSelectedSession(null);
   };
 
+  const handleBookingResult = (success: boolean) => {
+    if (success) {
+      setToastMessage("Session booked successfully!");
+      setToastVariant("success");
+    } else {
+      setToastMessage("Failed to book session.");
+      setToastVariant("danger");
+    }
+    setShowToast(true);
+  };
+
   useEffect(() => {
     axios
       .get(`http://localhost:8000/sessions/${selectedDate}`, {
@@ -91,7 +106,7 @@ const BookSession: React.FC = () => {
       .catch(() => {
         setSessionData([]);
       });
-  }, [selectedDate]);
+  }, [selectedDate, showModal]);
 
   return (
     <Container style={{ maxWidth: 700, margin: "40px auto", padding: 24 }}>
@@ -171,8 +186,29 @@ const BookSession: React.FC = () => {
             selectedSession.date
           )}
           locations={mockLocations}
+          session_id={selectedSession.id}
+          onBookingResult={handleBookingResult}
         />
       )}
+      <ToastContainer
+        position="top-end"
+        className="p-3"
+        style={{ zIndex: 9999 }}
+      >
+        <Toast
+          show={showToast}
+          onClose={() => setShowToast(false)}
+          bg={toastVariant}
+          delay={3000}
+          autohide
+        >
+          <Toast.Body
+            style={{ color: toastVariant === "success" ? "#1746A2" : "#fff" }}
+          >
+            {toastMessage}
+          </Toast.Body>
+        </Toast>
+      </ToastContainer>
     </Container>
   );
 };

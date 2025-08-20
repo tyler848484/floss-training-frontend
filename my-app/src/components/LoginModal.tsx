@@ -8,6 +8,8 @@ interface LoginModalProps {
 
 const LoginModal: React.FC<LoginModalProps> = ({ show, onHide }) => {
   const handleGoogleLogin = () => {
+    const currentPath = window.location.pathname;
+    localStorage.setItem("path", currentPath);
     window.location.href = "http://localhost:8000/login";
   };
 

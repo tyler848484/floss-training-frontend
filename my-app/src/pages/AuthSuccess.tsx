@@ -3,12 +3,13 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const AuthSuccess = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, isLoggedIn } = useAuth();
 
   useEffect(() => {
-    login();
-  }, [navigate]);
+    if (!isLoggedIn) {
+      login(localStorage.getItem("path"));
+    }
+  }, []);
 
   return <div>Signing you in...</div>;
 };

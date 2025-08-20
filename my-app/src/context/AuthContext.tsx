@@ -11,7 +11,7 @@ import axios from "axios";
 interface AuthContextType {
   isLoggedIn: boolean;
   user: { name: string; email: string; phone_number: string } | null;
-  login: () => void;
+  login: (storedPath: string | null) => void;
   logout: () => void;
   showLoginModal: boolean;
   setShowLoginModal: (show: boolean) => void;
@@ -41,14 +41,19 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const [profileComplete, setProfileComplete] = useState(false);
 
   useEffect(() => {
-    if (localStorage.getItem("user_name")) {
-      login();
+    const name = localStorage.getItem("user_name");
+    const email = localStorage.getItem("user_email");
+    const phone = localStorage.getItem("user_phone");
+    if (name && email) {
+      setUser({ name, email, phone_number: phone ?? "" });
+      setIsLoggedIn(true);
+      phone && setProfileComplete(true);
     }
   }, []);
 
-  const login = () => {
+  const login = (storedPath: string | null) => {
     axios
-      .get("http://localhost:8000/parents/me", { withCredentials: true })
+      .get("http://localhost:8000/parents/me")
       .then((response) => {
         if (response.status === 200) {
           const parent = response.data;
@@ -66,19 +71,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           });
           setIsLoggedIn(true);
           setShowLoginModal(false);
-          if (parent.phone_number) {
-            navigate("/");
-          } else {
+          const currentPath = window.location.pathname;
+          if (!parent.phone_number && currentPath !== "/complete-profile") {
             navigate("/complete-profile");
+          } else {
+            if (storedPath) {
+              navigate(storedPath);
+            } else {
+              navigate("/");
+            }
           }
         }
       })
-      .catch(() => {
-        navigate("/");
+      .catch((e) => {
+        console.log("Error logging in:", e);
       });
   };
 
   const logout = () => {
+    let currentPath = window.location.pathname;
+    currentPath === "/complete-profile" && (currentPath = "/");
     axios.post("http://localhost:8000/logout").finally(() => {
       localStorage.removeItem("user_name");
       localStorage.removeItem("user_email");
@@ -86,7 +98,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
       setUser(null);
       setIsLoggedIn(false);
       setShowLoginModal(true);
-      navigate("/");
+      if (currentPath) {
+        navigate(currentPath);
+      } else {
+        navigate("/");
+      }
     });
   };
 

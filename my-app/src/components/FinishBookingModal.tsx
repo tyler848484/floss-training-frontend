@@ -21,6 +21,8 @@ interface FinishBookingModalProps {
   startTime: string;
   endTime: string;
   locations: Location[];
+  session_id: number;
+  onBookingResult: (success: boolean) => void;
 }
 
 const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
@@ -30,13 +32,16 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
   startTime,
   endTime,
   locations,
+  session_id,
+  onBookingResult,
 }) => {
-  const [selectedLocation, setSelectedLocation] = useState<number>(
-    locations[0].id
+  const [selectedLocation, setSelectedLocation] = useState<string>(
+    locations[0].name
   );
   const [selectedChildren, setSelectedChildren] = useState<number[]>([]);
   const [children, setChildren] = useState<Child[]>([]);
   const [error, setError] = useState("");
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     axios
@@ -70,14 +75,35 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
       return;
     }
     setError("");
-    // Submit logic here
+
+    const payload = {
+      price: totalPrice,
+      num_of_kids: selectedChildren.length,
+      session_id: session_id,
+      child_ids: selectedChildren,
+      description: description,
+      location: selectedLocation,
+    };
+
+    axios
+      .post(`http://localhost:8000/bookings/`, payload)
+      .then((response) => {
+        if (response.status === 200) {
+          onBookingResult(true);
+        } else {
+          onBookingResult(false);
+        }
+      })
+      .catch(() => {
+        onBookingResult(false);
+      });
+
     onHide();
   };
 
-  // Pricing calculation
   const basePrice = 40;
   const locationPrice =
-    locations.find((loc) => loc.id === selectedLocation)?.price || 0;
+    locations.find((loc) => loc.name === selectedLocation)?.price || 0;
   const extraChildren =
     selectedChildren.length > 1 ? selectedChildren.length - 1 : 0;
   const totalPrice = basePrice + locationPrice + extraChildren * 10;
@@ -94,18 +120,31 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
           <strong>Time:</strong> {startTime} - {endTime}
         </div>
         <Form onSubmit={handleSubmit}>
+          <Form.Group className="mb-3" controlId="description">
+            <Form.Label style={{ fontWeight: 600 }}>
+              Session Description
+            </Form.Label>
+            <Form.Control
+              as="textarea"
+              rows={2}
+              placeholder="Describe what you want to work on in this session..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              style={{ borderRadius: 8, borderColor: "#1746A2" }}
+            />
+          </Form.Group>
           <Form.Group className="mb-3" controlId="location">
             <Form.Label style={{ fontWeight: 600 }}>Location</Form.Label>
             <Form.Select
               value={selectedLocation ?? ""}
-              onChange={(e) => setSelectedLocation(Number(e.target.value))}
+              onChange={(e) => setSelectedLocation(e.target.value)}
               style={{ borderRadius: 8, borderColor: "#1746A2" }}
             >
               <option value="" disabled>
                 Select a location
               </option>
               {locations.map((loc) => (
-                <option key={loc.id} value={loc.id}>
+                <option key={loc.id} value={loc.name}>
                   {loc.name}
                 </option>
               ))}
