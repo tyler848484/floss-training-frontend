@@ -7,7 +7,7 @@ const AuthSuccess = () => {
 
   useEffect(() => {
     if (!isLoggedIn) {
-      login(localStorage.getItem("path"));
+      login(sessionStorage.getItem("path"));
     }
   }, []);
 

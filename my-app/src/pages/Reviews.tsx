@@ -11,19 +11,11 @@ import {
 } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
-
-interface Review {
-  id: number;
-  first_name: string;
-  parent_id: number;
-  rating: number;
-  description: string;
-  date: string;
-}
+import { ReviewWithParent } from "../types";
 
 const Reviews: React.FC = () => {
   const { isLoggedIn, profileComplete } = useAuth();
-  const [reviews, setReviews] = useState<Review[]>([]);
+  const [reviews, setReviews] = useState<ReviewWithParent[]>([]);
   const [rating, setRating] = useState<number>(5);
   const [description, setDescription] = useState("");
   const [error, setError] = useState("");

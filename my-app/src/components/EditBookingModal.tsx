@@ -3,33 +3,32 @@ import React, { useEffect, useState } from "react";
 import { Modal, Button, Form, Row, Col, Alert } from "react-bootstrap";
 import { Child } from "../types";
 import { Locations } from "../Locations";
+import { BookingSummary } from "../types";
 
-interface FinishBookingModalProps {
+interface EditBookingModalProps {
   show: boolean;
   onHide: () => void;
-  date: string;
-  startTime: string;
-  endTime: string;
-  session_id: number;
-  onBookingResult: (success: boolean) => void;
+  booking: BookingSummary;
+  handleBookingResult: (success: boolean) => void;
 }
 
-const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
+const EditBookingModal: React.FC<EditBookingModalProps> = ({
   show,
   onHide,
-  date,
-  startTime,
-  endTime,
-  session_id,
-  onBookingResult,
+  booking,
+  handleBookingResult,
 }) => {
   const [selectedLocation, setSelectedLocation] = useState<string>(
-    Locations[0].name
+    booking.location
   );
-  const [selectedChildren, setSelectedChildren] = useState<number[]>([]);
+  const [selectedChildren, setSelectedChildren] = useState<number[]>(
+    booking.children
+      .map((child) => child.id)
+      .filter((id): id is number => id !== undefined)
+  );
   const [children, setChildren] = useState<Child[]>([]);
   const [error, setError] = useState("");
-  const [description, setDescription] = useState("");
+  const [description, setDescription] = useState(booking.description);
 
   useEffect(() => {
     axios
@@ -65,26 +64,19 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
     const payload = {
       price: totalPrice,
       num_of_kids: selectedChildren.length,
-      session_id: session_id,
       child_ids: selectedChildren,
       description: description,
       location: selectedLocation,
     };
 
     axios
-      .post(`http://localhost:8000/bookings/`, payload)
-      .then((response) => {
-        if (response.status === 200) {
-          onBookingResult(true);
-        } else {
-          onBookingResult(false);
-        }
+      .put(`http://localhost:8000/bookings/${booking.id}/`, payload)
+      .then(() => {
+        handleBookingResult(true);
       })
       .catch(() => {
-        onBookingResult(false);
+        handleBookingResult(false);
       });
-
-    onHide();
   };
 
   const basePrice = 40;
@@ -101,9 +93,9 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
       </Modal.Header>
       <Modal.Body>
         <div style={{ marginBottom: 16 }}>
-          <strong>Date:</strong> {date}
+          <strong>Date:</strong> {booking.date}
           <br />
-          <strong>Time:</strong> {startTime} - {endTime}
+          <strong>Time:</strong> {booking.start_time} - {booking.end_time}
         </div>
         <Form onSubmit={handleSubmit}>
           <Form.Group className="mb-3" controlId="description">
@@ -196,7 +188,7 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
                 minWidth: 120,
               }}
             >
-              Finish Booking
+              Confirm Changes
             </Button>
           </div>
         </Form>
@@ -205,4 +197,4 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
   );
 };
 
-export default FinishBookingModal;
+export default EditBookingModal;

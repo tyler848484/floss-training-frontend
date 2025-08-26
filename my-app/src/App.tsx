@@ -8,7 +8,10 @@ import AboutMe from "./pages/AboutMe";
 import Reviews from "./pages/Reviews";
 import BookSession from "./pages/BookSession";
 import MyAccount from "./pages/MyAccount";
-import { Routes, Route } from "react-router-dom";
+import AccountInfoSection from "./components/MyAccountSection";
+import ReviewsSection from "./components/ReviewsSection";
+import SessionsSection from "./components/SessionsSection";
+import { Routes, Route, Navigate } from "react-router-dom";
 import Profile from "./pages/Profile";
 import AuthSuccess from "./pages/AuthSuccess";
 
@@ -20,11 +23,33 @@ const App: React.FC = () => {
       <NavBar />
       <Container className="mt-4">
         <Routes>
-          <Route path="/" element={<BookSession />} />
           <Route path="/about" element={<AboutMe />} />
           <Route path="/reviews" element={<Reviews />} />
-          <Route path="/book" element={<BookSession />} />
-          <Route path="/account" element={<MyAccount />} />
+          <Route path="/book/:date" element={<BookSession />} />
+          <Route
+            path="/book"
+            element={
+              <Navigate
+                to={`/book/${new Date().toISOString().split("T")[0]}`}
+                replace
+              />
+            }
+          />
+          <Route
+            path="/"
+            element={
+              <Navigate
+                to={`/book/${new Date().toISOString().split("T")[0]}`}
+                replace
+              />
+            }
+          />
+          <Route path="/account" element={<MyAccount />}>
+            <Route path="my-account" element={<AccountInfoSection />} />
+            <Route path="my-reviews" element={<ReviewsSection />} />
+            <Route path="my-sessions" element={<SessionsSection />} />
+            <Route index element={<AccountInfoSection />} />
+          </Route>
           <Route path="/auth-success" element={<AuthSuccess />} />
           <Route path="/complete-profile" element={<Profile />} />
         </Routes>

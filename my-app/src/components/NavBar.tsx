@@ -61,7 +61,7 @@ const NavBar: React.FC = () => {
               alt="Soccer Ball"
               style={{ width: 40, height: 40, marginRight: 12 }}
             />
-            Floss Soccer Training
+            Floss Private Soccer Coaching
           </Link>
         </div>
         <div className="d-flex align-items-center">
@@ -126,7 +126,7 @@ const NavBar: React.FC = () => {
               <span className="me-2" role="img" aria-label="about">
                 👤
               </span>{" "}
-              About Me
+              About The Coach
             </NavLink>
             <NavLink
               to="/account"

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Card,
   Button,
@@ -13,18 +14,8 @@ import {
 import "../App.css";
 import FinishBookingModal from "../components/FinishBookingModal";
 import axios from "axios";
-import Login from "./Login";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-
-export interface Session {
-  id: number;
-  date: string;
-  start_time: string;
-  end_time: string;
-  location: string;
-  booked: boolean;
-}
+import { Session } from "../types";
 
 const getToday = () => {
   const today = new Date();
@@ -46,10 +37,12 @@ function formatTime12HourNoLeadingZero(timeStr: string, dateStr: string) {
   formatted = formatted.replace(/^0/, "");
   return formatted;
 }
+
 const BookSession: React.FC = () => {
   const { isLoggedIn, profileComplete, setShowLoginModal } = useAuth();
+  const params = useParams();
   const navigate = useNavigate();
-  const [selectedDate, setSelectedDate] = useState(getToday());
+  const [selectedDate, setSelectedDate] = useState(params.date);
   const [sessionData, setSessionData] = useState<Session[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
@@ -59,18 +52,13 @@ const BookSession: React.FC = () => {
     "success"
   );
 
-  const mockLocations = [
-    { name: "Centennial Field", price: 0, id: 1 },
-    { name: "Schusler", price: 5, id: 2 },
-    { name: "Hannover Estates Park", price: 10, id: 3 },
-  ];
-
   const handleBookClick = (sessionId: number) => {
     if (isLoggedIn && profileComplete) {
       const session = sessionData.find((s) => s.id === sessionId) || null;
       setSelectedSession(session);
       setShowModal(true);
     } else if (isLoggedIn && !profileComplete) {
+      sessionStorage.setItem("path", window.location.pathname);
       navigate("/complete-profile");
     } else {
       setShowLoginModal(true);
@@ -90,14 +78,13 @@ const BookSession: React.FC = () => {
       setToastMessage("Failed to book session.");
       setToastVariant("danger");
     }
+    fetchSessions();
     setShowToast(true);
   };
 
-  useEffect(() => {
+  const fetchSessions = () => {
     axios
-      .get(`http://localhost:8000/sessions/${selectedDate}`, {
-        withCredentials: true,
-      })
+      .get(`http://localhost:8000/sessions/${selectedDate}`)
       .then((response) => {
         if (response.status === 200) {
           setSessionData(response.data);
@@ -106,7 +93,11 @@ const BookSession: React.FC = () => {
       .catch(() => {
         setSessionData([]);
       });
-  }, [selectedDate, showModal]);
+  };
+
+  useEffect(() => {
+    fetchSessions();
+  }, [selectedDate]);
 
   return (
     <Container style={{ maxWidth: 700, margin: "40px auto", padding: 24 }}>
@@ -122,7 +113,10 @@ const BookSession: React.FC = () => {
                 type="date"
                 min={getToday()}
                 value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
+                onChange={(e) => {
+                  navigate(`/book/${e.target.value}`);
+                  setSelectedDate(e.target.value);
+                }}
                 style={{ borderRadius: 8, borderColor: "#1746A2" }}
               />
             </Col>
@@ -185,7 +179,6 @@ const BookSession: React.FC = () => {
             selectedSession.end_time,
             selectedSession.date
           )}
-          locations={mockLocations}
           session_id={selectedSession.id}
           onBookingResult={handleBookingResult}
         />

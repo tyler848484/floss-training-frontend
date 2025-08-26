@@ -13,23 +13,11 @@ const AboutMe: React.FC = () => {
     "/zach_images/trainer4.JPG",
   ];
 
-  const settings = {
-    dots: true,
-    infinite: true,
-    speed: 500,
-    slidesToShow: 1,
-    slidesToScroll: 1,
-    autoplay: true,
-    autoplaySpeed: 2500,
-    arrows: true,
-  };
-
   return (
     <div className="max-w-5xl mx-auto p-6">
-      <h2 className="text-3xl font-bold text-center mb-8">About The Trainer</h2>
+      <h2 className="text-3xl font-bold text-center mb-8">Meet The Coach</h2>
 
       <div className="flex flex-col md:flex-row items-center gap-8 mb-12">
-        {/* Info Section */}
         <div className="md:w-1/2">
           <h3 className="text-2xl font-semibold mb-2">Zach Floss</h3>
           <p className="text-gray-700 mb-2">
@@ -62,7 +50,6 @@ const AboutMe: React.FC = () => {
           </p>
         </div>
 
-        {/* Carousel Section */}
         <div style={{ width: "80%", margin: "0 auto" }}>
           <Swiper
             modules={[Navigation, Pagination, Autoplay]}
@@ -70,7 +57,8 @@ const AboutMe: React.FC = () => {
             pagination={{ clickable: true }}
             autoplay={{ delay: 3000 }}
             loop={true}
-            spaceBetween={20}
+            speed={2000}
+            spaceBetween={50}
             slidesPerView={1}
           >
             {images.map((img, index) => (
@@ -79,7 +67,7 @@ const AboutMe: React.FC = () => {
                   src={img}
                   alt={`Slide ${index}`}
                   style={{
-                    width: "100%",
+                    width: "90%",
                     height: "auto",
                     borderRadius: "10px",
                   }}

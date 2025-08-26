@@ -7,10 +7,11 @@ import React, {
 } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { User } from "../types";
 
 interface AuthContextType {
   isLoggedIn: boolean;
-  user: { name: string; email: string; phone_number: string } | null;
+  user: User | null;
   login: (storedPath: string | null) => void;
   logout: () => void;
   showLoginModal: boolean;
@@ -71,8 +72,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           });
           setIsLoggedIn(true);
           setShowLoginModal(false);
-          const currentPath = window.location.pathname;
-          if (!parent.phone_number && currentPath !== "/complete-profile") {
+          if (!parent.phone_number) {
             navigate("/complete-profile");
           } else {
             if (storedPath) {

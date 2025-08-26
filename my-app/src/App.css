@@ -80,3 +80,22 @@
   background: #fff;
   color: #1746a2;
 }
+.account-nav-link {
+  color: #1746a2 !important;
+  background: transparent;
+  border-radius: 6px;
+  padding: 8px 12px;
+  text-decoration: none;
+  display: block;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: background 0.2s, color 0.2s;
+}
+.account-nav-link.active {
+  color: #fff !important;
+  background: #1746a2 !important;
+}
+.account-nav-link:hover {
+  background: #ffd700 !important;
+  color: #1746a2 !important;
+}

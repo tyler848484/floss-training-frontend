@@ -12,13 +12,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import "../App.css";
 import axios from "axios";
-
-interface Child {
-  firstName: string;
-  lastName: string;
-  birthYear: string;
-  experience: number;
-}
+import { Child } from "../types";
 const Profile: React.FC = () => {
   const { user, setProfileComplete } = useAuth();
   const navigate = useNavigate();
@@ -27,21 +21,19 @@ const Profile: React.FC = () => {
   const [phone, setPhone] = useState("");
   const [children, setChildren] = useState<Child[]>([]);
   const [childForm, setChildForm] = useState<Child>({
-    firstName: "",
-    lastName: "",
-    birthYear: "",
-    experience: 1,
+    first_name: "",
+    last_name: "",
+    birth_year: 2000,
+    experience: "1 - Beginner",
   });
   const [error, setError] = useState("");
 
   const isValidPhone = (value: string) =>
     /^\d{10}$/.test(value.replace(/\D/g, ""));
   const isValidChild = (child: Child) =>
-    child.firstName.trim() &&
-    child.lastName.trim() &&
-    /^\d{4}$/.test(child.birthYear) &&
-    child.experience >= 1 &&
-    child.experience <= 5;
+    child.first_name.trim() &&
+    child.last_name.trim() &&
+    /^\d{4}$/.test(String(child.birth_year));
 
   const canComplete =
     isValidPhone(phone) && children.length > 0 && children.every(isValidChild);
@@ -52,7 +44,12 @@ const Profile: React.FC = () => {
       return;
     }
     setChildren([...children, childForm]);
-    setChildForm({ firstName: "", lastName: "", birthYear: "", experience: 1 });
+    setChildForm({
+      first_name: "",
+      last_name: "",
+      birth_year: 2000,
+      experience: "1 - Beginner",
+    });
     setError("");
   };
 
@@ -61,26 +58,23 @@ const Profile: React.FC = () => {
       phone_number: phone,
       children: children.map((child) => {
         return {
-          first_name: child.firstName,
-          last_name: child.lastName,
-          birth_year: Number(child.birthYear),
-          experience: String(child.experience),
+          first_name: child.first_name,
+          last_name: child.last_name,
+          birth_year: child.birth_year,
+          experience: child.experience,
         };
       }),
     };
     axios
-      .put("http://localhost:8000/parents/me", payload, {
-        withCredentials: true,
-      })
+      .put("http://localhost:8000/parents/me", payload)
       .then((response) => {
         if (response.status === 200) {
-          navigate("/");
+          const storedPath = sessionStorage.getItem("path");
+          navigate(storedPath || "/");
           setProfileComplete(true);
         }
       })
-      .catch(() => {
-        navigate("/");
-      });
+      .catch(() => {});
   };
 
   return (
@@ -145,10 +139,10 @@ const Profile: React.FC = () => {
                   <Row className="align-items-center">
                     <Col>
                       <strong>
-                        {child.firstName} {child.lastName}
+                        {child.first_name} {child.last_name}
                       </strong>
                     </Col>
-                    <Col>Birth Year: {child.birthYear}</Col>
+                    <Col>Birth Year: {child.birth_year}</Col>
                     <Col>
                       Experience:{" "}
                       <span style={{ color: "#1746A2", fontWeight: 600 }}>
@@ -163,7 +157,7 @@ const Profile: React.FC = () => {
                         onClick={() =>
                           setChildren(children.filter((_, i) => i !== idx))
                         }
-                        aria-label={`Delete child ${child.firstName} ${child.lastName}`}
+                        aria-label={`Delete child ${child.first_name} ${child.last_name}`}
                       >
                         Delete
                       </Button>
@@ -179,66 +173,92 @@ const Profile: React.FC = () => {
               <Card.Body>
                 <Row>
                   <Col md={3}>
-                    <Form.Control
-                      placeholder="First Name"
-                      value={childForm.firstName}
-                      onChange={(e) =>
-                        setChildForm({
-                          ...childForm,
-                          firstName: e.target.value,
-                        })
-                      }
-                    />
+                    <Form.Group controlId="profileChildFirstName">
+                      <Form.Label>First Name</Form.Label>
+                      <Form.Control
+                        placeholder="First Name"
+                        value={childForm.first_name}
+                        onChange={(e) =>
+                          setChildForm({
+                            ...childForm,
+                            first_name: e.target.value,
+                          })
+                        }
+                      />
+                    </Form.Group>
                   </Col>
                   <Col md={3}>
-                    <Form.Control
-                      placeholder="Last Name"
-                      value={childForm.lastName}
-                      onChange={(e) =>
-                        setChildForm({ ...childForm, lastName: e.target.value })
-                      }
-                    />
+                    <Form.Group controlId="profileChildLastName">
+                      <Form.Label>Last Name</Form.Label>
+                      <Form.Control
+                        placeholder="Last Name"
+                        value={childForm.last_name}
+                        onChange={(e) =>
+                          setChildForm({
+                            ...childForm,
+                            last_name: e.target.value,
+                          })
+                        }
+                      />
+                    </Form.Group>
                   </Col>
                   <Col md={3}>
-                    <Form.Control
-                      placeholder="Birth Year"
-                      type="number"
-                      min="2000"
-                      max={new Date().getFullYear()}
-                      value={childForm.birthYear}
-                      onChange={(e) =>
-                        setChildForm({
-                          ...childForm,
-                          birthYear: e.target.value,
-                        })
-                      }
-                    />
+                    <Form.Group controlId="profileChildBirthYear">
+                      <Form.Label>Birth Year</Form.Label>
+                      <Form.Control
+                        placeholder="Birth Year"
+                        type="number"
+                        min="2000"
+                        max={new Date().getFullYear()}
+                        value={childForm.birth_year}
+                        onChange={(e) =>
+                          setChildForm({
+                            ...childForm,
+                            birth_year: Number(e.target.value),
+                          })
+                        }
+                      />
+                    </Form.Group>
                   </Col>
                   <Col md={3}>
-                    <Form.Select
-                      value={childForm.experience}
-                      onChange={(e) =>
-                        setChildForm({
-                          ...childForm,
-                          experience: Number(e.target.value),
-                        })
-                      }
-                    >
-                      {[1, 2, 3, 4, 5].map((lvl) => (
-                        <option key={lvl} value={lvl}>
-                          {lvl} -{" "}
-                          {
-                            [
-                              "Beginner",
-                              "Novice",
-                              "Intermediate",
-                              "Advanced",
-                              "Elite",
-                            ][lvl - 1]
-                          }
-                        </option>
-                      ))}
-                    </Form.Select>
+                    <Form.Group controlId="profileChildExperience">
+                      <Form.Label>Experience</Form.Label>
+                      <Form.Select
+                        value={childForm.experience}
+                        onChange={(e) =>
+                          setChildForm({
+                            ...childForm,
+                            experience: e.target.value,
+                          })
+                        }
+                      >
+                        {[1, 2, 3, 4, 5].map((lvl) => (
+                          <option
+                            key={lvl}
+                            value={`${lvl} - ${
+                              [
+                                "Beginner",
+                                "Novice",
+                                "Intermediate",
+                                "Advanced",
+                                "Elite",
+                              ][lvl - 1]
+                            }`}
+                          >
+                            {lvl} -{" "}
+                            {
+                              [
+                                "Beginner",
+                                "Novice",
+                                "Intermediate",
+                                "Advanced",
+                                "Elite",
+                              ][lvl - 1]
+                            }
+                          </option>
+                        ))}
+                      </Form.Select>
+                    </Form.Group>
                   </Col>
                 </Row>
                 <Button
