@@ -16,10 +16,10 @@ const LoginModal: React.FC<LoginModalProps> = ({ show, onHide }) => {
   return (
     <Modal show={show} onHide={onHide} centered>
       <Modal.Header closeButton>
-        <Modal.Title>Sign In</Modal.Title>
+        <Modal.Title>Login</Modal.Title>
       </Modal.Header>
       <Modal.Body className="text-center">
-        <p>Sign in to your account using Google:</p>
+        <p>Login to your account using Google:</p>
         <Button
           variant="danger"
           size="lg"
@@ -27,7 +27,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ show, onHide }) => {
           onClick={handleGoogleLogin}
         >
           <span style={{ marginRight: 8, fontSize: "1.3em" }}>🔒</span>
-          Sign in with Google
+          Login with Google
         </Button>
       </Modal.Body>
     </Modal>

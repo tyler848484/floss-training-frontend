@@ -4,6 +4,8 @@ import { Card, Button, ListGroup, Form, Row, Col } from "react-bootstrap";
 import { PencilSquare, Trash } from "react-bootstrap-icons";
 import { Review } from "../types";
 import DangerConfirmationModal from "./DangerConfirmationModal";
+import { useToast } from "../context/ToastContext";
+import LoadingSpinner from "./LoadingSpinner";
 
 const ReviewsSection: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -14,16 +16,27 @@ const ReviewsSection: React.FC = () => {
     description: string;
   }>({ rating: 5, description: "" });
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { showToast } = useToast();
+  const [saving, setSaving] = useState(false);
 
   const fetchReviews = () => {
+    setIsLoading(true);
     axios
       .get("http://localhost:8000/reviews/by_parent")
       .then((response) => {
         if (response.status === 200) {
           setReviews(response.data);
+        } else {
+          showToast("Failed to fetch reviews.", "danger");
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        showToast("Failed to fetch reviews.", "danger");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -31,12 +44,22 @@ const ReviewsSection: React.FC = () => {
   }, []);
 
   const deleteReview = () => {
+    setSaving(true);
     axios
       .delete(`http://localhost:8000/reviews/${deletingId}`)
-      .then(() => {})
-      .catch(() => {})
+      .then((response) => {
+        if (response.status === 204) {
+          showToast("Review deleted successfully!", "success");
+        } else {
+          showToast("Failed to delete review.", "danger");
+        }
+      })
+      .catch(() => {
+        showToast("Failed to delete review.", "danger");
+      })
       .finally(() => {
         setDeletingId(null);
+        setSaving(false);
         fetchReviews();
       });
   };
@@ -53,16 +76,27 @@ const ReviewsSection: React.FC = () => {
       return;
     }
 
+    setSaving(true);
     axios
       .put(`http://localhost:8000/reviews/${id}`, {
         rating: editForm.rating,
         description: editForm.description,
       })
-      .then(() => {})
-      .catch(() => setError("Failed to update review."))
+      .then((response) => {
+        if (response.status === 200) {
+          showToast("Review updated successfully!", "success");
+        } else {
+          setError("Failed to update review.");
+        }
+      })
+      .catch(() => {
+        showToast("Failed to update review.", "danger");
+      })
       .finally(() => {
         setEditingId(null);
+        setSaving(false);
         fetchReviews();
+        setError("");
       });
   };
 
@@ -76,7 +110,9 @@ const ReviewsSection: React.FC = () => {
       <Card className="shadow" style={{ borderRadius: 16 }}>
         <Card.Body>
           <h4 style={{ color: "#1746A2", fontWeight: 700 }}>My Reviews</h4>
-          {reviews.length === 0 ? (
+          {isLoading ? (
+            <LoadingSpinner msg="Loading reviews..." />
+          ) : reviews.length === 0 ? (
             <div className="text-muted mb-2">No reviews yet.</div>
           ) : (
             <ListGroup variant="flush">
@@ -106,6 +142,7 @@ const ReviewsSection: React.FC = () => {
                                 rating: Number(e.target.value),
                               })
                             }
+                            disabled={saving}
                           >
                             {[1, 2, 3, 4, 5].map((n) => (
                               <option key={n} value={n}>
@@ -125,6 +162,7 @@ const ReviewsSection: React.FC = () => {
                                 description: e.target.value,
                               })
                             }
+                            disabled={saving}
                           />
                         </Form.Group>
                         {error && (
@@ -136,14 +174,16 @@ const ReviewsSection: React.FC = () => {
                             size="sm"
                             style={{ borderRadius: 8 }}
                             onClick={() => handleEditSave(review.id)}
+                            disabled={saving}
                           >
-                            Save
+                            {saving ? "Saving..." : "Save"}
                           </Button>
                           <Button
                             variant="outline-secondary"
                             size="sm"
                             style={{ borderRadius: 8 }}
                             onClick={handleEditCancel}
+                            disabled={saving}
                           >
                             Cancel
                           </Button>
@@ -214,6 +254,7 @@ const ReviewsSection: React.FC = () => {
         confirm={deleteReview}
         cancel={() => setDeletingId(null)}
         msg="Are you sure you want to delete this review?"
+        loading={saving}
       />
     </>
   );

@@ -1,34 +1,25 @@
 import React, { useEffect, useState } from "react";
-import {
-  Card,
-  Button,
-  Form,
-  Row,
-  Col,
-  Alert,
-  Toast,
-  ToastContainer,
-} from "react-bootstrap";
+import { Card, Button, Form, Row, Col, Alert } from "react-bootstrap";
 import { useAuth } from "../context/AuthContext";
 import axios from "axios";
 import { ReviewWithParent } from "../types";
+import { useToast } from "../context/ToastContext";
+import LoadingSpinner from "../components/LoadingSpinner";
+import { useNavigate } from "react-router-dom";
 
 const Reviews: React.FC = () => {
   const { isLoggedIn, profileComplete } = useAuth();
   const [reviews, setReviews] = useState<ReviewWithParent[]>([]);
   const [rating, setRating] = useState<number>(5);
   const [description, setDescription] = useState("");
-  const [error, setError] = useState("");
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastVariant, setToastVariant] = useState<"success" | "danger">(
-    "success"
-  );
   const [submitting, setSubmitting] = useState(false);
+  const { showToast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { setShowLoginModal } = useAuth();
 
   const handleAddReview = (e: React.FormEvent) => {
     e.preventDefault();
-    if (submitting) return;
     setSubmitting(true);
 
     const payload = {
@@ -41,38 +32,39 @@ const Reviews: React.FC = () => {
       .post(`http://localhost:8000/reviews/`, payload)
       .then((response) => {
         if (response.status === 200) {
-          setToastMessage("Review submitted successfully!");
-          setToastVariant("success");
+          showToast("Review submitted successfully!", "success");
         } else {
-          setToastMessage("Failed to submit review.");
-          setToastVariant("danger");
+          showToast("Failed to submit review.", "danger");
         }
       })
       .catch(() => {
-        setToastMessage("Failed to submit review.");
-        setToastVariant("danger");
+        showToast("Failed to submit review.", "danger");
       })
       .finally(() => {
-        setShowToast(true);
         fetchReviews();
         setSubmitting(false);
       });
 
     setRating(5);
     setDescription("");
-    setError("");
   };
 
   const fetchReviews = () => {
+    setIsLoading(true);
     axios
       .get(`http://localhost:8000/reviews/`)
       .then((response) => {
         if (response.status === 200) {
           setReviews(response.data);
+        } else {
+          showToast("Failed to fetch reviews.", "danger");
         }
       })
       .catch(() => {
-        setReviews([]);
+        showToast("Failed to fetch reviews.", "danger");
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -97,6 +89,7 @@ const Reviews: React.FC = () => {
                     value={rating}
                     onChange={(e) => setRating(Number(e.target.value))}
                     style={{ borderRadius: 8, borderColor: "#1746A2" }}
+                    disabled={submitting}
                   >
                     {[5, 4, 3, 2, 1].map((r) => (
                       <option key={r} value={r}>
@@ -116,14 +109,10 @@ const Reviews: React.FC = () => {
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     style={{ borderRadius: 8, borderColor: "#1746A2" }}
+                    disabled={submitting}
                   />
                 </Col>
               </Row>
-              {error && (
-                <Alert variant="danger" className="mt-2">
-                  {error}
-                </Alert>
-              )}
               <div className="d-flex justify-content-end mt-2">
                 <Button
                   type="submit"
@@ -140,14 +129,38 @@ const Reviews: React.FC = () => {
               </div>
             </Form>
           ) : (
-            <Alert variant="info" className="mt-2">
-              You must be signed in and have completed your profile to submit a
-              review.
-            </Alert>
+            <>
+              <Alert variant="info" className="mt-2">
+                You must be signed in and have completed your profile to submit
+                a review.
+              </Alert>
+              {isLoggedIn ? (
+                <Button
+                  className="btn btn-warning mt-2"
+                  onClick={() => {
+                    sessionStorage.setItem("path", window.location.pathname);
+                    navigate("/complete-profile");
+                  }}
+                >
+                  Complete Profile
+                </Button>
+              ) : (
+                <Button
+                  className="btn btn-warning mt-2"
+                  onClick={() => {
+                    setShowLoginModal(true);
+                  }}
+                >
+                  Login
+                </Button>
+              )}
+            </>
           )}
         </Card.Body>
       </Card>
-      {reviews.length === 0 ? (
+      {isLoading ? (
+        <LoadingSpinner msg="Loading reviews..." />
+      ) : reviews.length === 0 ? (
         <h5>No reviews yet.</h5>
       ) : (
         <Row xs={1} md={2} lg={3} className="g-3">
@@ -189,25 +202,6 @@ const Reviews: React.FC = () => {
           ))}
         </Row>
       )}
-      <ToastContainer
-        position="top-end"
-        className="p-3"
-        style={{ zIndex: 9999 }}
-      >
-        <Toast
-          show={showToast}
-          onClose={() => setShowToast(false)}
-          bg={toastVariant}
-          delay={3000}
-          autohide
-        >
-          <Toast.Body
-            style={{ color: toastVariant === "success" ? "#1746A2" : "#fff" }}
-          >
-            {toastMessage}
-          </Toast.Body>
-        </Toast>
-      </ToastContainer>
     </div>
   );
 };

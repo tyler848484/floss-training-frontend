@@ -1,21 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  Card,
-  Button,
-  Modal,
-  Form,
-  Row,
-  Col,
-  Container,
-  Toast,
-  ToastContainer,
-} from "react-bootstrap";
+import { Card, Button, Form, Row, Col, Container } from "react-bootstrap";
 import "../App.css";
 import FinishBookingModal from "../components/FinishBookingModal";
 import axios from "axios";
 import { useAuth } from "../context/AuthContext";
 import { Session } from "../types";
+import { useToast } from "../context/ToastContext";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 const getToday = () => {
   const today = new Date();
@@ -46,11 +38,8 @@ const BookSession: React.FC = () => {
   const [sessionData, setSessionData] = useState<Session[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
-  const [showToast, setShowToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
-  const [toastVariant, setToastVariant] = useState<"success" | "danger">(
-    "success"
-  );
+  const { showToast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleBookClick = (sessionId: number) => {
     if (isLoggedIn && profileComplete) {
@@ -72,26 +61,29 @@ const BookSession: React.FC = () => {
 
   const handleBookingResult = (success: boolean) => {
     if (success) {
-      setToastMessage("Session booked successfully!");
-      setToastVariant("success");
+      showToast("Session booked successfully!", "success");
     } else {
-      setToastMessage("Failed to book session.");
-      setToastVariant("danger");
+      showToast("Failed to book session.", "danger");
     }
     fetchSessions();
-    setShowToast(true);
   };
 
   const fetchSessions = () => {
+    setIsLoading(true);
     axios
       .get(`http://localhost:8000/sessions/${selectedDate}`)
       .then((response) => {
         if (response.status === 200) {
           setSessionData(response.data);
+        } else {
+          showToast("Failed to fetch sessions.", "danger");
         }
       })
       .catch(() => {
-        setSessionData([]);
+        showToast("Failed to fetch sessions.", "danger");
+      })
+      .finally(() => {
+        setIsLoading(false);
       });
   };
 
@@ -125,44 +117,48 @@ const BookSession: React.FC = () => {
           <h4 style={{ color: "#1746A2", fontWeight: 600 }}>
             Available Sessions
           </h4>
-          <Row>
-            {sessionData.length > 0 ? (
-              sessionData.map((session) => (
-                <Col md={6} key={session.id} className="mb-3">
-                  <Card style={{ background: "#eaf1fb", borderRadius: 12 }}>
-                    <Card.Body>
-                      <div style={{ fontWeight: 600, color: "#1746A2" }}>
-                        {formatTime12HourNoLeadingZero(
-                          session.start_time,
-                          session.date
-                        )}{" "}
-                        -{" "}
-                        {formatTime12HourNoLeadingZero(
-                          session.end_time,
-                          session.date
-                        )}
-                      </div>
-                      <Button
-                        variant="primary"
-                        style={{
-                          background: "#1746A2",
-                          border: "none",
-                          borderRadius: 8,
-                          marginTop: 12,
-                          minWidth: 120,
-                        }}
-                        onClick={() => handleBookClick(session.id)}
-                      >
-                        Book Session
-                      </Button>
-                    </Card.Body>
-                  </Card>
-                </Col>
-              ))
-            ) : (
-              <h5>No available sessions. Try a different day.</h5>
-            )}
-          </Row>
+          {isLoading ? (
+            <LoadingSpinner msg="Loading available sessions..." />
+          ) : (
+            <Row>
+              {sessionData.length > 0 ? (
+                sessionData.map((session) => (
+                  <Col md={6} key={session.id} className="mb-3">
+                    <Card style={{ background: "#eaf1fb", borderRadius: 12 }}>
+                      <Card.Body>
+                        <div style={{ fontWeight: 600, color: "#1746A2" }}>
+                          {formatTime12HourNoLeadingZero(
+                            session.start_time,
+                            session.date
+                          )}{" "}
+                          -{" "}
+                          {formatTime12HourNoLeadingZero(
+                            session.end_time,
+                            session.date
+                          )}
+                        </div>
+                        <Button
+                          variant="primary"
+                          style={{
+                            background: "#1746A2",
+                            border: "none",
+                            borderRadius: 8,
+                            marginTop: 12,
+                            minWidth: 120,
+                          }}
+                          onClick={() => handleBookClick(session.id)}
+                        >
+                          Book Session
+                        </Button>
+                      </Card.Body>
+                    </Card>
+                  </Col>
+                ))
+              ) : (
+                <h5>No available sessions. Try a different day.</h5>
+              )}
+            </Row>
+          )}
         </Card.Body>
       </Card>
 
@@ -183,25 +179,6 @@ const BookSession: React.FC = () => {
           onBookingResult={handleBookingResult}
         />
       )}
-      <ToastContainer
-        position="top-end"
-        className="p-3"
-        style={{ zIndex: 9999 }}
-      >
-        <Toast
-          show={showToast}
-          onClose={() => setShowToast(false)}
-          bg={toastVariant}
-          delay={3000}
-          autohide
-        >
-          <Toast.Body
-            style={{ color: toastVariant === "success" ? "#1746A2" : "#fff" }}
-          >
-            {toastMessage}
-          </Toast.Body>
-        </Toast>
-      </ToastContainer>
     </Container>
   );
 };

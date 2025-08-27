@@ -8,6 +8,8 @@ import React, {
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { User } from "../types";
+import { useToast } from "./ToastContext";
+import LoadingSpinner from "../components/LoadingSpinner";
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -40,6 +42,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   } | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [profileComplete, setProfileComplete] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     const name = localStorage.getItem("user_name");
@@ -53,6 +57,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   }, []);
 
   const login = (storedPath: string | null) => {
+    setLoading(true);
     axios
       .get("http://localhost:8000/parents/me")
       .then((response) => {
@@ -83,27 +88,35 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           }
         }
       })
-      .catch((e) => {
-        console.log("Error logging in:", e);
+      .catch(() => {
+        showToast("Failed to log in. Please try again.", "danger");
+      })
+      .finally(() => {
+        setLoading(false);
       });
   };
 
   const logout = () => {
+    setLoading(true);
     let currentPath = window.location.pathname;
     currentPath === "/complete-profile" && (currentPath = "/");
-    axios.post("http://localhost:8000/logout").finally(() => {
-      localStorage.removeItem("user_name");
-      localStorage.removeItem("user_email");
-      localStorage.removeItem("user_phone");
-      setUser(null);
-      setIsLoggedIn(false);
-      setShowLoginModal(true);
-      if (currentPath) {
-        navigate(currentPath);
-      } else {
-        navigate("/");
-      }
-    });
+    axios
+      .post("http://localhost:8000/logout")
+      .catch(() => {
+        showToast("Failed to log out. Please try again.", "danger");
+      })
+      .finally(() => {
+        localStorage.removeItem("user_name");
+        localStorage.removeItem("user_email");
+        localStorage.removeItem("user_phone");
+        setUser(null);
+        setIsLoggedIn(false);
+        setShowLoginModal(true);
+        setLoading(false);
+        if (currentPath) {
+          navigate(currentPath);
+        }
+      });
   };
 
   return (
@@ -119,6 +132,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         setProfileComplete,
       }}
     >
+      {loading && <LoadingSpinner msg="Loading user information..." />}
       {children}
     </AuthContext.Provider>
   );

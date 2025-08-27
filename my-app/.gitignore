@@ -7,9 +7,22 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# Dependency directories
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+build/
+out/
+
+# Vite cache
+.vite/
+
+# Environment files
+.env*
+
+# Local config
 *.local
 
 # Editor directories and files
@@ -22,3 +35,27 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Mac system files
+.DS_Store
+
+# npm
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Misc
+*.tgz
+.npm/
+.yarn/
+.parcel-cache/
+.eslintcache
+
+# TypeScript
+*.tsbuildinfo
+
+# Coverage
+coverage/
+
+# Lottie animation cache
+lottie-cache/

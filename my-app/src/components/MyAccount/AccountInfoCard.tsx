@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Card, Button, ListGroup, Form } from "react-bootstrap";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 import { PencilSquare } from "react-bootstrap-icons";
+import { useToast } from "../../context/ToastContext";
 
 const isValidPhone = (value: string) =>
   /^\d{10}$/.test(value.replace(/\D/g, ""));
@@ -14,6 +15,8 @@ const AccountInfoCard: React.FC = () => {
   );
   const [editingUser, setEditingUser] = useState(false);
   const [userError, setUserError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { showToast } = useToast();
 
   const handleUserEdit = () => {
     setEditingUser(true);
@@ -25,22 +28,26 @@ const AccountInfoCard: React.FC = () => {
       return;
     }
 
+    setIsLoading(true);
     axios
       .put("http://localhost:8000/parents/phone", {
         phone_number: editPhoneNumber,
       })
       .then((response) => {
         if (response.status === 200) {
+          showToast("Phone number updated successfully!", "success");
         } else {
-          setUserError("Failed to update phone number.");
+          showToast("Failed to update phone number.", "danger");
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        showToast("Failed to update phone number.", "danger");
+      })
       .finally(() => {
         login(window.location.pathname);
+        setEditingUser(false);
+        setIsLoading(false);
       });
-
-    setEditingUser(false);
   };
 
   return (
@@ -57,6 +64,7 @@ const AccountInfoCard: React.FC = () => {
                 onChange={(e) => setEditPhoneNumber(e.target.value)}
                 placeholder="Enter 10-digit phone number"
                 isInvalid={!!editPhoneNumber && !isValidPhone(editPhoneNumber)}
+                disabled={isLoading}
               />
               {userError && (
                 <Form.Text className="text-danger">{userError}</Form.Text>
@@ -67,13 +75,15 @@ const AccountInfoCard: React.FC = () => {
                 variant="success"
                 onClick={handleUserSave}
                 style={{ borderRadius: 8 }}
+                disabled={isLoading}
               >
-                Save
+                {isLoading ? "Saving..." : "Save"}
               </Button>
               <Button
                 variant="outline-secondary"
                 onClick={() => setEditingUser(false)}
                 style={{ borderRadius: 8 }}
+                disabled={isLoading}
               >
                 Cancel
               </Button>

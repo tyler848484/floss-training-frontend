@@ -13,6 +13,9 @@ import { useNavigate } from "react-router-dom";
 import "../App.css";
 import axios from "axios";
 import { Child } from "../types";
+import { useToast } from "../context/ToastContext";
+import LoadingSpinner from "../components/LoadingSpinner";
+import ChildFormCard from "../components/ChildFormCard";
 const Profile: React.FC = () => {
   const { user, setProfileComplete } = useAuth();
   const navigate = useNavigate();
@@ -27,6 +30,8 @@ const Profile: React.FC = () => {
     experience: "1 - Beginner",
   });
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { showToast } = useToast();
 
   const isValidPhone = (value: string) =>
     /^\d{10}$/.test(value.replace(/\D/g, ""));
@@ -54,6 +59,7 @@ const Profile: React.FC = () => {
   };
 
   const handleComplete = () => {
+    setIsLoading(true);
     const payload = {
       phone_number: phone,
       children: children.map((child) => {
@@ -70,12 +76,24 @@ const Profile: React.FC = () => {
       .then((response) => {
         if (response.status === 200) {
           const storedPath = sessionStorage.getItem("path");
+          showToast("Profile updated successfully!", "success");
           navigate(storedPath || "/");
           setProfileComplete(true);
+        } else {
+          showToast("Failed to update profile.", "danger");
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        showToast("Failed to update profile.", "danger");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
+
+  if (isLoading) {
+    return <LoadingSpinner msg="Finishing profile setup..." />;
+  }
 
   return (
     <div
@@ -166,120 +184,13 @@ const Profile: React.FC = () => {
                 </Card.Body>
               </Card>
             ))}
-            <Card
-              className="mt-3 mb-2"
-              style={{ background: "#eaf1fb", borderRadius: 12 }}
-            >
-              <Card.Body>
-                <Row>
-                  <Col md={3}>
-                    <Form.Group controlId="profileChildFirstName">
-                      <Form.Label>First Name</Form.Label>
-                      <Form.Control
-                        placeholder="First Name"
-                        value={childForm.first_name}
-                        onChange={(e) =>
-                          setChildForm({
-                            ...childForm,
-                            first_name: e.target.value,
-                          })
-                        }
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group controlId="profileChildLastName">
-                      <Form.Label>Last Name</Form.Label>
-                      <Form.Control
-                        placeholder="Last Name"
-                        value={childForm.last_name}
-                        onChange={(e) =>
-                          setChildForm({
-                            ...childForm,
-                            last_name: e.target.value,
-                          })
-                        }
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group controlId="profileChildBirthYear">
-                      <Form.Label>Birth Year</Form.Label>
-                      <Form.Control
-                        placeholder="Birth Year"
-                        type="number"
-                        min="2000"
-                        max={new Date().getFullYear()}
-                        value={childForm.birth_year}
-                        onChange={(e) =>
-                          setChildForm({
-                            ...childForm,
-                            birth_year: Number(e.target.value),
-                          })
-                        }
-                      />
-                    </Form.Group>
-                  </Col>
-                  <Col md={3}>
-                    <Form.Group controlId="profileChildExperience">
-                      <Form.Label>Experience</Form.Label>
-                      <Form.Select
-                        value={childForm.experience}
-                        onChange={(e) =>
-                          setChildForm({
-                            ...childForm,
-                            experience: e.target.value,
-                          })
-                        }
-                      >
-                        {[1, 2, 3, 4, 5].map((lvl) => (
-                          <option
-                            key={lvl}
-                            value={`${lvl} - ${
-                              [
-                                "Beginner",
-                                "Novice",
-                                "Intermediate",
-                                "Advanced",
-                                "Elite",
-                              ][lvl - 1]
-                            }`}
-                          >
-                            {lvl} -{" "}
-                            {
-                              [
-                                "Beginner",
-                                "Novice",
-                                "Intermediate",
-                                "Advanced",
-                                "Elite",
-                              ][lvl - 1]
-                            }
-                          </option>
-                        ))}
-                      </Form.Select>
-                    </Form.Group>
-                  </Col>
-                </Row>
-                <Button
-                  variant="primary"
-                  className="mt-2"
-                  style={{
-                    background: "#1746A2",
-                    border: "none",
-                    borderRadius: 8,
-                  }}
-                  onClick={handleAddChild}
-                >
-                  Add Child
-                </Button>
-                {error && (
-                  <Alert variant="danger" className="mt-2">
-                    {error}
-                  </Alert>
-                )}
-              </Card.Body>
-            </Card>
+            <ChildFormCard
+              childForm={childForm}
+              setChildForm={setChildForm}
+              onSave={handleAddChild}
+              mode="profile_complete"
+              error={error}
+            />
             <div className="d-flex justify-content-end mt-4">
               <Button
                 variant="success"

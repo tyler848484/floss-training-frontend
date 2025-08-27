@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { Modal, Button, Form, Row, Col, Alert } from "react-bootstrap";
 import { Child } from "../types";
 import { Locations } from "../Locations";
+import { useToast } from "../context/ToastContext";
 
 interface FinishBookingModalProps {
   show: boolean;
@@ -30,6 +31,8 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
   const [children, setChildren] = useState<Child[]>([]);
   const [error, setError] = useState("");
   const [description, setDescription] = useState("");
+  const { showToast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     axios
@@ -37,10 +40,12 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
       .then((response) => {
         if (response.status === 200) {
           setChildren(response.data);
+        } else {
+          showToast("Failed to fetch children.", "danger");
         }
       })
       .catch(() => {
-        setChildren([]);
+        showToast("Failed to fetch children.", "danger");
       });
   }, []);
 
@@ -71,6 +76,7 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
       location: selectedLocation,
     };
 
+    setIsLoading(true);
     axios
       .post(`http://localhost:8000/bookings/`, payload)
       .then((response) => {
@@ -82,9 +88,11 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
       })
       .catch(() => {
         onBookingResult(false);
+      })
+      .finally(() => {
+        setIsLoading(false);
+        onHide();
       });
-
-    onHide();
   };
 
   const basePrice = 40;
@@ -117,6 +125,7 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               style={{ borderRadius: 8, borderColor: "#1746A2" }}
+              disabled={isLoading}
             />
           </Form.Group>
           <Form.Group className="mb-3" controlId="location">
@@ -125,6 +134,7 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
               value={selectedLocation ?? ""}
               onChange={(e) => setSelectedLocation(e.target.value)}
               style={{ borderRadius: 8, borderColor: "#1746A2" }}
+              disabled={isLoading}
             >
               <option value="" disabled>
                 Select a location
@@ -154,6 +164,7 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
                         child.id !== undefined && handleChildToggle(child.id)
                       }
                       style={{ fontWeight: 500 }}
+                      disabled={isLoading}
                     />
                   </Col>
                 ))
@@ -195,8 +206,9 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
                 borderRadius: 8,
                 minWidth: 120,
               }}
+              disabled={isLoading}
             >
-              Finish Booking
+              {isLoading ? "Confirming Booking..." : "Confirm Booking"}
             </Button>
           </div>
         </Form>

@@ -29,6 +29,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
   const [children, setChildren] = useState<Child[]>([]);
   const [error, setError] = useState("");
   const [description, setDescription] = useState(booking.description);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     axios
@@ -61,6 +62,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
     }
     setError("");
 
+    setSaving(true);
     const payload = {
       price: totalPrice,
       num_of_kids: selectedChildren.length,
@@ -71,11 +73,18 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
 
     axios
       .put(`http://localhost:8000/bookings/${booking.id}/`, payload)
-      .then(() => {
-        handleBookingResult(true);
+      .then((response) => {
+        if (response.status === 200) {
+          handleBookingResult(true);
+        } else {
+          handleBookingResult(false);
+        }
       })
       .catch(() => {
         handleBookingResult(false);
+      })
+      .finally(() => {
+        setSaving(false);
       });
   };
 
@@ -109,6 +118,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               style={{ borderRadius: 8, borderColor: "#1746A2" }}
+              disabled={saving}
             />
           </Form.Group>
           <Form.Group className="mb-3" controlId="location">
@@ -117,6 +127,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
               value={selectedLocation ?? ""}
               onChange={(e) => setSelectedLocation(e.target.value)}
               style={{ borderRadius: 8, borderColor: "#1746A2" }}
+              disabled={saving}
             >
               <option value="" disabled>
                 Select a location
@@ -146,6 +157,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                         child.id !== undefined && handleChildToggle(child.id)
                       }
                       style={{ fontWeight: 500 }}
+                      disabled={saving}
                     />
                   </Col>
                 ))
@@ -188,7 +200,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
                 minWidth: 120,
               }}
             >
-              Confirm Changes
+              {saving ? "Saving Changes..." : "Save Changes"}
             </Button>
           </div>
         </Form>

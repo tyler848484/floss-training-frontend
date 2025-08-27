@@ -6,6 +6,8 @@ import FinishBookingModal from "./FinishBookingModal";
 import DangerConfirmationModal from "./DangerConfirmationModal";
 import EditBookingModal from "./EditBookingModal";
 import { PencilSquare, Trash } from "react-bootstrap-icons";
+import { useToast } from "../context/ToastContext";
+import LoadingSpinner from "./LoadingSpinner";
 
 const SessionsSection: React.FC = () => {
   const [sessions, setSessions] = useState<BookingSummary[]>([]);
@@ -19,16 +21,27 @@ const SessionsSection: React.FC = () => {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [deleteSessionId, setDeleteSessionId] = useState<number | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const { showToast } = useToast();
+  const [saving, setSaving] = useState(false);
 
   const fetchSessions = () => {
+    setIsLoading(true);
     axios
       .get("http://localhost:8000/bookings")
       .then((response) => {
         if (response.status === 200) {
           setSessions(response.data);
+        } else {
+          showToast("Failed to fetch sessions.", "danger");
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        showToast("Failed to fetch sessions.", "danger");
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
   };
 
   useEffect(() => {
@@ -65,27 +78,45 @@ const SessionsSection: React.FC = () => {
 
   const confirmDeleteSession = () => {
     if (deleteSessionId !== null) {
+      setSaving(true);
       axios
         .delete(`http://localhost:8000/bookings/${deleteSessionId}`)
-        .then(() => {})
-        .catch(() => {})
+        .then((response) => {
+          if (response.status === 204) {
+            showToast("Session deleted successfully!", "success");
+          } else {
+            showToast("Failed to delete session.", "danger");
+          }
+        })
+        .catch(() => {
+          showToast("Failed to delete session.", "danger");
+        })
         .finally(() => {
+          setSaving(false);
+          setShowDeleteModal(false);
+          setDeleteSessionId(null);
           fetchSessions();
         });
     }
-    setShowDeleteModal(false);
-    setDeleteSessionId(null);
   };
 
   const handleBookingResult = (success: boolean) => {
+    if (success) {
+      showToast("Booking successful!", "success");
+    } else {
+      showToast("Booking failed.", "danger");
+    }
     setShowBookingModal(false);
     setEditingSession(null);
     fetchSessions();
   };
 
+  if (isLoading) {
+    return <LoadingSpinner msg="Loading sessions..." />;
+  }
+
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
-      {/* Future Sessions */}
       <Card className="mb-4 shadow" style={{ borderRadius: 16 }}>
         <Card.Header
           style={{ cursor: "pointer", background: "#eaf1fb" }}
@@ -278,7 +309,6 @@ const SessionsSection: React.FC = () => {
         )}
       </Card>
 
-      {/* Edit Modal */}
       {editingSession && (
         <EditBookingModal
           show={showBookingModal}
@@ -288,12 +318,12 @@ const SessionsSection: React.FC = () => {
         />
       )}
 
-      {/* Delete Modal */}
       <DangerConfirmationModal
         show={showDeleteModal}
         cancel={() => setShowDeleteModal(false)}
         confirm={confirmDeleteSession}
         msg="Are you sure you want to delete this session?"
+        loading={saving}
       />
     </div>
   );

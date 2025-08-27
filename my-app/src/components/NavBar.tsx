@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import LogoutModal from "./LogoutModal";
+import LogoutModal from "./AuthModals/LogoutModal";
 import { Button, Offcanvas, Nav, Container } from "react-bootstrap";
 import { NavLink, Link } from "react-router-dom";
-import LoginModal from "./LoginModal";
+import LoginModal from "./AuthModals/LoginModal";
 
 const NavBar: React.FC = () => {
   const [show, setShow] = useState(false);
