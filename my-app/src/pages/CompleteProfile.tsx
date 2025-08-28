@@ -81,6 +81,7 @@ const Profile: React.FC = () => {
           showToast("Profile updated successfully!", "success");
           navigate(storedPath || "/");
           setProfileComplete(true);
+          localStorage.setItem("user_phone", phone);
         } else {
           showToast("Failed to update profile.", "danger");
         }
