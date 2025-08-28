@@ -16,6 +16,8 @@ import { Child } from "../types";
 import { useToast } from "../context/ToastContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import ChildFormCard from "../components/ChildFormCard";
+const apiUrl = import.meta.env.VITE_API_URL;
+
 const Profile: React.FC = () => {
   const { user, setProfileComplete } = useAuth();
   const navigate = useNavigate();
@@ -72,7 +74,7 @@ const Profile: React.FC = () => {
       }),
     };
     axios
-      .put("http://localhost:8000/parents/me", payload)
+      .put(`${apiUrl}/parents/me`, payload)
       .then((response) => {
         if (response.status === 200) {
           const storedPath = sessionStorage.getItem("path");

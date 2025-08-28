@@ -7,6 +7,7 @@ import DangerConfirmationModal from "../DangerConfirmationModal";
 import { useToast } from "../../context/ToastContext";
 import LoadingSpinner from "../LoadingSpinner";
 import ChildFormCard from "../ChildFormCard";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const ChildrenInfoCard: React.FC = () => {
   const [children, setChildren] = useState<Child[]>([]);
@@ -27,7 +28,7 @@ const ChildrenInfoCard: React.FC = () => {
   const getChildren = () => {
     setIsLoading(true);
     axios
-      .get(`http://localhost:8000/children/`)
+      .get(`${apiUrl}/children/`)
       .then((response) => {
         if (response.status === 200) {
           setChildren(response.data);
@@ -54,7 +55,7 @@ const ChildrenInfoCard: React.FC = () => {
     }
 
     axios
-      .post(`http://localhost:8000/children/`, {
+      .post(`${apiUrl}/children/`, {
         ...childForm,
       })
       .then((response) => {
@@ -96,7 +97,7 @@ const ChildrenInfoCard: React.FC = () => {
     }
 
     axios
-      .put(`http://localhost:8000/children/${editingChildId}`, {
+      .put(`${apiUrl}/children/${editingChildId}`, {
         ...childForm,
       })
       .then((response) => {
@@ -124,7 +125,7 @@ const ChildrenInfoCard: React.FC = () => {
   const confirmDeleteChild = () => {
     if (deleteChildId !== null) {
       axios
-        .delete(`http://localhost:8000/children/${deleteChildId}`)
+        .delete(`${apiUrl}/children/${deleteChildId}`)
         .then((response) => {
           if (response.status === 204) {
             showToast("Child deleted successfully!", "success");

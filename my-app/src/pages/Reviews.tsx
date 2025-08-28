@@ -6,6 +6,7 @@ import { ReviewWithParent } from "../types";
 import { useToast } from "../context/ToastContext";
 import LoadingSpinner from "../components/LoadingSpinner";
 import { useNavigate } from "react-router-dom";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const Reviews: React.FC = () => {
   const { isLoggedIn, profileComplete } = useAuth();
@@ -29,7 +30,7 @@ const Reviews: React.FC = () => {
     };
 
     axios
-      .post(`http://localhost:8000/reviews/`, payload)
+      .post(`${apiUrl}/reviews/`, payload)
       .then((response) => {
         if (response.status === 200) {
           showToast("Review submitted successfully!", "success");
@@ -52,7 +53,7 @@ const Reviews: React.FC = () => {
   const fetchReviews = () => {
     setIsLoading(true);
     axios
-      .get(`http://localhost:8000/reviews/`)
+      .get(`${apiUrl}/reviews/`)
       .then((response) => {
         if (response.status === 200) {
           setReviews(response.data);

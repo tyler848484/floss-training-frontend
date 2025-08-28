@@ -2,12 +2,12 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { Card, Button, ListGroup } from "react-bootstrap";
 import { BookingSummary } from "../types";
-import FinishBookingModal from "./FinishBookingModal";
 import DangerConfirmationModal from "./DangerConfirmationModal";
 import EditBookingModal from "./EditBookingModal";
 import { PencilSquare, Trash } from "react-bootstrap-icons";
 import { useToast } from "../context/ToastContext";
 import LoadingSpinner from "./LoadingSpinner";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const SessionsSection: React.FC = () => {
   const [sessions, setSessions] = useState<BookingSummary[]>([]);
@@ -28,7 +28,7 @@ const SessionsSection: React.FC = () => {
   const fetchSessions = () => {
     setIsLoading(true);
     axios
-      .get("http://localhost:8000/bookings")
+      .get(`${apiUrl}/bookings`)
       .then((response) => {
         if (response.status === 200) {
           setSessions(response.data);
@@ -80,7 +80,7 @@ const SessionsSection: React.FC = () => {
     if (deleteSessionId !== null) {
       setSaving(true);
       axios
-        .delete(`http://localhost:8000/bookings/${deleteSessionId}`)
+        .delete(`${apiUrl}/bookings/${deleteSessionId}`)
         .then((response) => {
           if (response.status === 204) {
             showToast("Session deleted successfully!", "success");

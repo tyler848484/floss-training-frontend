@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import axios from "axios";
 import { PencilSquare } from "react-bootstrap-icons";
 import { useToast } from "../../context/ToastContext";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const isValidPhone = (value: string) =>
   /^\d{10}$/.test(value.replace(/\D/g, ""));
@@ -30,7 +31,7 @@ const AccountInfoCard: React.FC = () => {
 
     setIsLoading(true);
     axios
-      .put("http://localhost:8000/parents/phone", {
+      .put(`${apiUrl}/parents/phone`, {
         phone_number: editPhoneNumber,
       })
       .then((response) => {

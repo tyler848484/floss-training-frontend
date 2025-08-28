@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal, Button } from "react-bootstrap";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 interface LoginModalProps {
   show: boolean;
@@ -10,7 +11,7 @@ const LoginModal: React.FC<LoginModalProps> = ({ show, onHide }) => {
   const handleGoogleLogin = () => {
     const currentPath = window.location.pathname;
     sessionStorage.setItem("path", currentPath);
-    window.location.href = "http://localhost:8000/login";
+    window.location.href = `${apiUrl}/login`;
   };
 
   return (

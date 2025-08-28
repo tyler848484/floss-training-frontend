@@ -4,6 +4,7 @@ import { Modal, Button, Form, Row, Col, Alert } from "react-bootstrap";
 import { Child } from "../types";
 import { Locations } from "../Locations";
 import { BookingSummary } from "../types";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 interface EditBookingModalProps {
   show: boolean;
@@ -33,7 +34,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/children/`)
+      .get(`${apiUrl}/children/`)
       .then((response) => {
         if (response.status === 200) {
           setChildren(response.data);
@@ -72,7 +73,7 @@ const EditBookingModal: React.FC<EditBookingModalProps> = ({
     };
 
     axios
-      .put(`http://localhost:8000/bookings/${booking.id}/`, payload)
+      .put(`${apiUrl}/bookings/${booking.id}/`, payload)
       .then((response) => {
         if (response.status === 200) {
           handleBookingResult(true);

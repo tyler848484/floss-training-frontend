@@ -6,6 +6,7 @@ import { Review } from "../types";
 import DangerConfirmationModal from "./DangerConfirmationModal";
 import { useToast } from "../context/ToastContext";
 import LoadingSpinner from "./LoadingSpinner";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const ReviewsSection: React.FC = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -23,7 +24,7 @@ const ReviewsSection: React.FC = () => {
   const fetchReviews = () => {
     setIsLoading(true);
     axios
-      .get("http://localhost:8000/reviews/by_parent")
+      .get(`${apiUrl}/reviews/by_parent`)
       .then((response) => {
         if (response.status === 200) {
           setReviews(response.data);
@@ -46,7 +47,7 @@ const ReviewsSection: React.FC = () => {
   const deleteReview = () => {
     setSaving(true);
     axios
-      .delete(`http://localhost:8000/reviews/${deletingId}`)
+      .delete(`${apiUrl}/reviews/${deletingId}`)
       .then((response) => {
         if (response.status === 204) {
           showToast("Review deleted successfully!", "success");
@@ -78,7 +79,7 @@ const ReviewsSection: React.FC = () => {
 
     setSaving(true);
     axios
-      .put(`http://localhost:8000/reviews/${id}`, {
+      .put(`${apiUrl}/reviews/${id}`, {
         rating: editForm.rating,
         description: editForm.description,
       })

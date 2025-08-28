@@ -10,6 +10,7 @@ import axios from "axios";
 import { User } from "../types";
 import { useToast } from "./ToastContext";
 import LoadingSpinner from "../components/LoadingSpinner";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 interface AuthContextType {
   isLoggedIn: boolean;
@@ -59,7 +60,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const login = (storedPath: string | null) => {
     setLoading(true);
     axios
-      .get("http://localhost:8000/parents/me")
+      .get(`${apiUrl}/parents/me`)
       .then((response) => {
         if (response.status === 200) {
           const parent = response.data;
@@ -101,7 +102,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     let currentPath = window.location.pathname;
     currentPath === "/complete-profile" && (currentPath = "/");
     axios
-      .post("http://localhost:8000/logout")
+      .post(`${apiUrl}/logout`)
       .catch(() => {
         showToast("Failed to log out. Please try again.", "danger");
       })

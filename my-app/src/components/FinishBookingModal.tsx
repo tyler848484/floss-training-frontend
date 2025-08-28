@@ -4,6 +4,7 @@ import { Modal, Button, Form, Row, Col, Alert } from "react-bootstrap";
 import { Child } from "../types";
 import { Locations } from "../Locations";
 import { useToast } from "../context/ToastContext";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 interface FinishBookingModalProps {
   show: boolean;
@@ -36,7 +37,7 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
 
   useEffect(() => {
     axios
-      .get(`http://localhost:8000/children/`)
+      .get(`${apiUrl}/children/`)
       .then((response) => {
         if (response.status === 200) {
           setChildren(response.data);
@@ -78,7 +79,7 @@ const FinishBookingModal: React.FC<FinishBookingModalProps> = ({
 
     setIsLoading(true);
     axios
-      .post(`http://localhost:8000/bookings/`, payload)
+      .post(`${apiUrl}/bookings/`, payload)
       .then((response) => {
         if (response.status === 200) {
           onBookingResult(true);

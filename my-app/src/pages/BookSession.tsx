@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import { Session } from "../types";
 import { useToast } from "../context/ToastContext";
 import LoadingSpinner from "../components/LoadingSpinner";
+const apiUrl = import.meta.env.VITE_API_URL;
 
 const getToday = () => {
   const today = new Date();
@@ -71,7 +72,7 @@ const BookSession: React.FC = () => {
   const fetchSessions = () => {
     setIsLoading(true);
     axios
-      .get(`http://localhost:8000/sessions/${selectedDate}`)
+      .get(`${apiUrl}/sessions/${selectedDate}`)
       .then((response) => {
         if (response.status === 200) {
           setSessionData(response.data);
