@@ -19,8 +19,7 @@ import ChildFormCard from "../components/ChildFormCard";
 const apiUrl = import.meta.env.VITE_API_URL;
 
 const Profile: React.FC = () => {
-  const { user, setProfileComplete } = useAuth();
-  const navigate = useNavigate();
+  const { user, login } = useAuth();
   const name = user?.name || localStorage.getItem("user_name") || "";
   const email = user?.email || localStorage.getItem("user_email") || "";
   const [phone, setPhone] = useState("");
@@ -78,10 +77,8 @@ const Profile: React.FC = () => {
       .then((response) => {
         if (response.status === 200) {
           const storedPath = sessionStorage.getItem("path");
-          showToast("Profile updated successfully!", "success");
-          navigate(storedPath || "/");
-          setProfileComplete(true);
-          localStorage.setItem("user_phone", phone);
+          showToast("Your profile is now complete!", "success");
+          login(storedPath);
         } else {
           showToast("Failed to update profile.", "danger");
         }

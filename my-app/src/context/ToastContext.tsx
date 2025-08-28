@@ -19,7 +19,7 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
       <Toaster
         position="top-center"
         toastOptions={{
-          duration: 3000,
+          duration: 5000,
           style: {
             borderRadius: "10px",
             background: "#333",
