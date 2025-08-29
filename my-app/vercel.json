@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/(.*)",
-      "destination": "https://floss-private-coaching-api.onrender.com/$1"
-    },
-    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
